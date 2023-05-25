@@ -1,7 +1,7 @@
 import express from "express";
 import { createServer } from "http";
 import cors from "cors";
-import { Server } from "socket.io";
+import { startSocketIOServer } from "./services/socket-io";
 
 const app = express();
 
@@ -10,21 +10,7 @@ app.use(cors());
 
 const httpServer = createServer(app);
 
-const io = new Server(httpServer, {
-    cors: {
-        origin: "*",
-        methods: ["GET", "POST"],
-    },
-});
-
-io.on("connection", (socket) => {
-    console.log("connected")
-    
-    socket.on("send-this", (message) => {
-        console.log("received: ", message);
-        socket.broadcast.emit("get-this", message);
-    });
-});
+startSocketIOServer(httpServer);
 
 app.get("/", (_, res) => {
     return res.send("yo");

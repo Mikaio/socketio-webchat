@@ -1,0 +1,32 @@
+version: '3.7'
+services:
+  mysql:
+    image: mysql:8.0.21
+    # restart: always
+    container_name: mysql
+    environment:
+      MYSQL_DATABASE: 'identifik'
+      MYSQL_USER: 'root'
+      MYSQL_PASSWORD: ''
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'true'
+    ports:
+      - 3306:3306
+    volumes:
+      - sql-db:/var/lib/mysql
+    command: mysqld --sql_mode="NO_ENGINE_SUBSTITUTION"
+    networks:
+      - default
+  redis:
+    image: redis:alpine
+    # restart: always
+    container_name: redis
+    ports:
+      - 6379:6379
+    networks:
+      - default
+volumes:
+  sql-db:
+    driver: local
+networks:
+  default:
+    driver: bridge
