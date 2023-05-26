@@ -1,7 +1,11 @@
-import { Room } from './models'
+import {
+    Room,
+    User
+} from './models'
 
 const dbInit = () => Promise.all([
-    Room.sync({ alter: true }),
+    User.sync({ alter: false }),
+    Room.sync({ alter: false }),
 ])
 
 export default dbInit 

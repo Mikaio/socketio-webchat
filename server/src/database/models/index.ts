@@ -1,5 +1,7 @@
-import { Room } from "./Room";
+import Room from "./Room";
+import User from "./User";
 
 export {
-    Room
+    Room,
+    User,
 };
