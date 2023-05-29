@@ -34,10 +34,10 @@ export function Home() {
 
     return (
         <div
-            className="w-full h-screen bg-sky-600 flex flex-col"
+            className="w-full h-screen flex flex-col"
         >
             <div
-                className="w-full h-18 p-4 bg-zinc-400 text-center flex items-center justify-center"
+                className="w-full h-18 p-4 bg-zinc-200 text-center flex items-center justify-center"
             >
                 <h1>
                     {username}
@@ -51,7 +51,7 @@ export function Home() {
                 </div>
             </div>
             <div
-                className="flex-1 gap-8 flex-col w-full p-6 bg-zinc-300 flex items-center justify-center"
+                className="flex-1 gap-8 flex-col w-full p-6 flex items-center justify-center"
             >
                 <Outlet />
             </div>

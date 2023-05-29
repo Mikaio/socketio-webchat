@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { redirect, useNavigate } from "react-router-dom";
 import { Input } from "../components/Input";
+import api from "../services/api";
 
 export function loginLoader() {
     const username = localStorage.getItem("@username");
@@ -34,6 +35,14 @@ export function Login() {
             if (enteringUsername === "")
                 return setInvalidUsername(true);
 
+            const result = await api.post("/user", {
+                username: enteringUsername,
+            });
+
+            const newUser = result.data;
+
+            console.log({ newUser });
+
             localStorage.setItem("@username", enteringUsername);
             navigate("/");
         } catch (err) {
@@ -48,12 +57,13 @@ export function Login() {
             >
                 I hope you remember your username
             </h1>
-            <div className="w-3/5 shadow-2xl">
+            <div className="w-3/5">
                 <Input
                     label="&#128071;"
                     placeholder="..."
                     value={enteringUsername}
                     onChange={changeUsername}
+                    shadowed={true}
                 />
             </div>
             {

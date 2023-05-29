@@ -60,7 +60,7 @@ export default class UserController {
         }
     }
 
-    public async create(req: Request, res: Response) {
+    public async signupOrLogin(req: Request, res: Response) {
         try {
             const body = req.body;
 
@@ -69,16 +69,21 @@ export default class UserController {
             const userAlreadyExists = await db
                 .select()
                 .from(users)
-                .where(eq(users.username, data.username));
+                .where(eq(users.username, data.username)).limit(1);
 
             console.log({ userAlreadyExists });
 
             if (!!userAlreadyExists.length)
-                throw new Error("User already exists");
+                return res.status(200).json(userAlreadyExists[0]);
 
             await db.insert(users).values(data as NewUser);
 
-            return res.status(StatusCodes.CREATED).send();
+            const createdUser = await db
+                .select()
+                .from(users)
+                .where(eq(users.username, data.username)).limit(1);
+
+            return res.status(StatusCodes.CREATED).send(createdUser[0]);
 
         } catch (err) {
             console.log({ err });

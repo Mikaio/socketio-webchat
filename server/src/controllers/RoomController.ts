@@ -7,8 +7,12 @@ import {
     rooms,
     users,
 } from "../db";
+import { sendRoomData } from "../jobs/SendRoomData";
 
-import roomValidator from "../validators/roomValidator";
+import {
+    create as createValidator,
+    view as viewValidator,
+} from "../validators/roomValidator";
 
 export default class RoomController {
     public async list(req: Request, res: Response) {
@@ -16,7 +20,7 @@ export default class RoomController {
 
             const rows = await db.select().from(rooms);
 
-            return res.status(StatusCodes.OK).json({ rooms: rows });
+            return res.status(StatusCodes.OK).json(rows);
         } catch (err) {
             console.log({ err });
 
@@ -35,7 +39,7 @@ export default class RoomController {
         try {
             const body = req.body;
 
-            const data = roomValidator.parse(body);
+            const data = createValidator.parse(body);
 
             const roomAlreadyExists = await db
                 .select()
@@ -57,12 +61,50 @@ export default class RoomController {
 
             await db.insert(rooms).values(data as NewRoom);
 
-            return res.status(StatusCodes.CREATED).send();
+            const createdRoom = await db.select().from(rooms).where(eq(rooms.name, data.name)).limit(1);
+
+            return res.status(StatusCodes.CREATED).json(createdRoom[0]);
 
         } catch (err) {
             console.log({ err });
 
             let message = "Could not create room";
+
+            if (err instanceof Error)
+                message = err.message
+                
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message,
+            });
+        }
+    }
+
+    public async viewRoom(req: Request, res: Response, next: NextFunction) {
+        try {
+            const params = req.params;
+
+            const { roomId } = viewValidator.parse(params);
+
+            const room = await db
+                .select()
+                .from(rooms)
+                .where(eq(rooms.id, parseInt(roomId))).limit(1);
+
+            console.log({ room });
+
+            if (!room.length) 
+                throw new Error("Room does not exist");
+
+            await sendRoomData(roomId, {
+                test: "dale"
+            });
+
+            return res.status(StatusCodes.OK).json(room[0]);
+
+        } catch (err) {
+            console.log({ err });
+
+            let message = "Could not view room";
 
             if (err instanceof Error)
                 message = err.message

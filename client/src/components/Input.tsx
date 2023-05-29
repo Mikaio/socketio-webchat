@@ -9,6 +9,7 @@ import { backgroundColor } from "tailwindcss-classnames";
 import { width } from "tailwindcss-classnames";
 import { padding } from "tailwindcss-classnames";
 import { margin } from "tailwindcss-classnames";
+import { boxShadow } from "tailwindcss-classnames";
 
 export type InputProps = {
     value: string | number,
@@ -16,7 +17,8 @@ export type InputProps = {
     label?: string,
     placeholder?: string,
     required?: boolean,
-    textCenter?: boolean
+    textCenter?: boolean,
+    shadowed?: boolean,
 }
 
 export const Input = ({
@@ -25,7 +27,8 @@ export const Input = ({
     label = "",
     placeholder = "",
     required = false,
-    textCenter = true
+    textCenter = true,
+    shadowed = false,
 }: InputProps) => {
 
     const inputClassnames = classnames(
@@ -38,16 +41,20 @@ export const Input = ({
         backgroundColor("bg-zinc-200"),
         width("w-full"),
         padding("p-2.5"), 
+        boxShadow(shadowed ? "shadow-2xl" : "shadow-none"),
     );
 
     const labelClassnames = classnames(
         display("block"),
         margin("mb-2"),
         typography("text-sm", "font-medium", "text-gray-900", (textCenter ? "text-center" : "text-inherit")),
+        backgroundColor("bg-transparent")
     );
 
     return (
-        <div>
+        <div
+            className="bg-transparent"
+        >
             {
                 label && (
                     <label

@@ -30,7 +30,7 @@ const sendRoomDataWorker = () => {
 
                 const server = io("ws://127.0.0.1:3001");
 
-                const listeners = await  new Promise((resolve, reject) => {
+                const listeners = await new Promise((resolve) => {
 
                     server.on("connect", () => {
                         console.log("connected");
@@ -38,13 +38,23 @@ const sendRoomDataWorker = () => {
 
                     console.log("connected to server")
 
-                    server.emit("give-me-the-listeners", "sup");
+                    server.emit("give-me-the-listeners", name);
 
-                    server.once("give-me-the-listeners", (message) => {
+                    server.once("give-me-the-listeners-for-" + name, (message) => {
                         console.log({ message });
 
                         resolve(message);
                     });
+                });
+
+                if (!listeners)
+                    return job.remove();
+
+                server.emit("join", name);
+
+                server.emit("send-message", {
+                    room: name,
+                    message: "hi hi " + name
                 });
 
                 console.log("after await");

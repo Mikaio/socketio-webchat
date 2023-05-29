@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const validator = z.object({
+export const create = z.object({
     name: z.string({
         required_error: "The name is required",
     }),
@@ -9,4 +9,9 @@ const validator = z.object({
     }),
 });
 
-export default validator;
+
+export const view = z.object({
+    roomId: z.string({
+        required_error: "The room ID is required",
+    }),
+});
