@@ -4,10 +4,7 @@ import cors from "cors";
 import { startSocketIOServer } from "./services/socket-io";
 import { sendRoomData } from "./jobs/SendRoomData";
 import routes from "./routes";
-
-import initDb from "./database/init";
-
-initDb();
+import errorMiddleware from "./middlewares/error.middleware";
 
 const app = express();
 
@@ -23,5 +20,7 @@ app.get("/", async (_, res) => {
     await sendRoomData("test", { test: "bruh" });
     return res.send("yo");
 });
+
+app.use(errorMiddleware);
 
 httpServer.listen(3001, () => console.log("server running"));

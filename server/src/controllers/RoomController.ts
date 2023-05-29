@@ -1,57 +1,74 @@
-import { Request, Response } from "express";
-import { request } from "http";
+import { eq } from "drizzle-orm";
+import { NextFunction, Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
-import { Room, User } from "../database/models";
+import {
+    db,
+    NewRoom,
+    rooms,
+    users,
+} from "../db";
 
 import roomValidator from "../validators/roomValidator";
 
 export default class RoomController {
     public async list(req: Request, res: Response) {
         try {
-            const rooms = await Room.findAndCountAll({
-                order: [["name", "ASC"]],
-            });
 
-            return res.status(StatusCodes.OK).json({ rooms });
+            const rows = await db.select().from(rooms);
+
+            return res.status(StatusCodes.OK).json({ rooms: rows });
         } catch (err) {
+            console.log({ err });
+
+            let message = "Could not list rooms";
+
+            if (err instanceof Error)
+                message = err.message
+                
             return res.status(StatusCodes.BAD_REQUEST).json({
-                message: "Could not list rooms",
+                message,
             });
         }
     }
 
-    public async create(req: Request, res: Response) {
+    public async create(req: Request, res: Response, next: NextFunction) {
         try {
             const body = req.body;
 
             const data = roomValidator.parse(body);
 
-            const roomAlreadyExists = await Room.findOne({
-                where: {
-                    name: data.name,
-                }
-            });
+            const roomAlreadyExists = await db
+                .select()
+                .from(rooms)
+                .where(eq(rooms.name, data.name));
 
-            if (!!roomAlreadyExists) 
+            console.log({ roomAlreadyExists });
+
+            if (!!roomAlreadyExists.length) 
                 throw new Error("Room already exists");
 
-            const userExists = await User.findOne({
-                where: {
-                    id: data.userId,
-                },
-            });
+            const userExists = await db
+                .select()
+                .from(users)
+                .where(eq(users.id, data.userId));
 
-            if (!userExists)
+            if (!userExists.length)
                 throw new Error("User does not exists");
 
-            const room = await Room.create(data);
+            await db.insert(rooms).values(data as NewRoom);
 
-            return res.status(StatusCodes.CREATED).json({ room });
+            return res.status(StatusCodes.CREATED).send();
 
         } catch (err) {
-            console.log(err)
+            console.log({ err });
+
+            let message = "Could not create room";
+
+            if (err instanceof Error)
+                message = err.message
+                
             return res.status(StatusCodes.BAD_REQUEST).json({
-                message: err.message ??"Could not create room",
+                message,
             });
         }
     }
