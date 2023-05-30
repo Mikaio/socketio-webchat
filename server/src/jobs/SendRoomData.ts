@@ -16,7 +16,8 @@ const sendRoomData = async (name: string, data: RoomData) => {
     await sendRoomDataQueue.add(name, data, {
         repeat: {
             every: 5000,
-        }
+        },
+        jobId: "send-room-data",
     });
 }
 
@@ -28,40 +29,46 @@ const sendRoomDataWorker = () => {
                 const name = job.name;
                 const data = job.data;
 
-                const server = io("ws://127.0.0.1:3001");
+                const server = io("ws://127.0.0.1:3001", {
+                    autoConnect: false,
+                    transports: ["websocket"]
+                });
+
 
                 const listeners = await new Promise((resolve) => {
+                    server.connect();
 
                     server.on("connect", () => {
-                        console.log("connected");
+                        console.log("connected -", name);
                     });
 
                     console.log("connected to server")
 
-                    server.emit("give-me-the-listeners", name);
-
-                    server.once("give-me-the-listeners-for-" + name, (message) => {
-                        console.log({ message });
-
-                        resolve(message);
+                    server.emit("give-me-the-listeners", name, (response: number) => {
+                        resolve(response);
                     });
                 });
 
-                if (!listeners)
-                    return job.remove();
+                console.log(`${listeners} in room ${name}`);
+                if (!listeners) {
+                    server.off();
+                    server.disconnect();
+                    console.log("removing from queue:", name);
+                    await sendRoomDataQueue.removeRepeatableByKey(job.repeatJobKey as string);
+                    console.log("removed:", name);
+                    return;
+                }
 
                 server.emit("join", name);
 
-                server.emit("send-message", {
+                server.emit("send-job-message", {
                     room: name,
                     message: "hi hi " + name
+                }, () => {
+                    console.log("message was send to", name);
+                    server.off();
+                    server.disconnect();
                 });
-
-                console.log("after await");
-
-                server.disconnect();
-
-                console.log({ name, data, listeners });
             } catch (error) {
                 console.log("ERROR PROCESSING", jobName, error);
             }
@@ -80,6 +87,7 @@ const sendRoomDataWorker = () => {
 };
 
 export {
+    sendRoomDataQueue,
     sendRoomData,
     sendRoomDataWorker,
 };

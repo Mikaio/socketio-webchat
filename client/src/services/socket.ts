@@ -16,4 +16,5 @@ const splitUrl = (url: string) => {
 
 export const socket = io(`ws://${splitUrl(configs.host)}:${configs.port}`, {
     autoConnect: false,
+    transports: ["websocket"]
 });
