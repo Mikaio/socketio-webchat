@@ -13,6 +13,11 @@ import { instrument } from "@socket.io/admin-ui";
 import { createBullBoard } from '@bull-board/api';
 import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
 import { ExpressAdapter } from '@bull-board/express';
+import { CommandLineArgs } from "./utils/CommandLineArgs";
+
+const commandLineArgs = CommandLineArgs(process.argv);
+
+console.log({ commandLineArgs });
 
 const app = express();
 
@@ -43,7 +48,8 @@ instrument(io, {
   mode: "development",
 });
 
-io.adapter(createClusterAdapter());
+if (commandLineArgs.mode === "cluster")
+    io.adapter(createClusterAdapter());
 
 Promise.all([pubClient.connect(), subClient.connect()]).then(() => {
   io.adapter(createRedisAdapter(pubClient, subClient));

@@ -5,8 +5,9 @@
   "license": "MIT",
   "scripts": {
     "build": "npx tsc",
-    "start": "node dist/server.js",
-    "dev": "concurrently \"npx tsc --watch\" \"nodemon -q dist/src/server.js\"",
+    "start:normal": "npx tsc && node dist/server.js mode=normal",
+    "start:cluster": "npx tsc && pm2 start ecosystem.config.js",
+    "dev": "concurrently \"npx tsc --watch\" \"nodemon -q dist/src/server.js mode=normal\"",
     "queue": "npx tsc && node dist/src/services/queue.js",
     "migrate": "npx tsc && node dist/src/db/migrate.js"
   },
